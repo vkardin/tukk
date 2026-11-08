@@ -1,0 +1,28 @@
+name: Bug report
+description: A gesture or action does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Which gesture and action, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Tukk version
+      placeholder: "0.4.0"
+  - type: input
+    attributes:
+      label: Phone and Android version
+      placeholder: "Redmi 9A, MIUI 12, Android 10"
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Screen state
+      options: [Screen on, Screen off, Both]
+  - type: textarea
+    attributes:
+      label: Background settings
+      description: Battery optimization, autostart and other settings you changed for Tukk.

@@ -1,0 +1,12 @@
+name: Feature request
+description: Suggest a gesture, an action or another idea for Tukk
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes:
+      label: What would you like Tukk to do?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Why is it useful?
