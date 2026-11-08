@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Tukk</string>
+    <string name="active">Тлеет ярко · жесты активны</string>
+    <string name="paused">Тлеет · жесты на паузе</string>
+    <string name="gestures">Жесты</string>
+    <string name="pause">Пауза</string>
+    <string name="permission_title">Уведомления о работе жестов</string>
+    <string name="permission_body">Разрешите уведомления, чтобы видеть, когда жесты активны, и ставить их на паузу.</string>
+    <string name="enable">Включить</string>
+    <string name="cancel">Отмена</string>
+    <string name="language">Язык</string>
+    <string name="debug_record">Записать движение</string>
+    <string name="debug_stop">Остановить запись</string>
+    <string name="settings">Настройки</string>
+    <string name="close">Готово</string>
+    <string name="sensitivity">Чувствительность</string>
+    <string name="low">Низкая</string>
+    <string name="medium">Средняя</string>
+    <string name="high">Высокая</string>
+    <string name="cooldown">Пауза между жестами — %1$d мс</string>
+    <string name="always">Всегда</string>
+    <string name="screen_on">Только с включённым экраном</string>
+    <string name="screen_off">Только с выключенным экраном</string>
+    <string name="screen_warning">Работа с выключенным экраном зависит от датчиков телефона и может увеличить расход батареи.</string>
+    <string name="pocket_guard">Игнорировать жесты в кармане</string>
+    <string name="haptic">Вибрация после жеста</string>
+    <string name="pause_charging">Пауза во время зарядки</string>
+    <string name="appearance">Оформление</string>
+    <string name="dark_theme">Тёмная тема</string>
+    <string name="light_theme">Светлая тема</string>
+    <string name="system_theme">Как в системе</string>
+    <string name="dynamic_color">Цвета обоев</string>
+    <string name="background_title">Работа в фоне</string>
+    <string name="background_advice">Если жесты останавливаются, откройте системные настройки приложения и разрешите работу в фоне. На Xiaomi также включите автозапуск; на Samsung проверьте список приложений в глубоком сне.</string>
+    <string name="system_settings">Системные настройки</string>
+    <string name="about_body">Tukk · vkardin\nЖесты обрабатываются на телефоне. Без аккаунта, аналитики и доступа к сети.</string>
+</resources>
