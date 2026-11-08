@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Tukk</string>
+    <string name="active">Жевріє · жести активні</string>
+    <string name="paused">Тліє · жести на паузі</string>
+    <string name="gestures">Жести</string>
+    <string name="pause">Пауза</string>
+    <string name="permission_title">Сповіщення про роботу жестів</string>
+    <string name="permission_body">Дозвольте сповіщення, щоб бачити, коли жести активні, і ставити їх на паузу.</string>
+    <string name="enable">Увімкнути</string>
+    <string name="cancel">Скасувати</string>
+    <string name="language">Мова</string>
+    <string name="debug_record">Записати рух</string>
+    <string name="debug_stop">Зупинити запис</string>
+    <string name="settings">Налаштування</string>
+    <string name="close">Готово</string>
+    <string name="sensitivity">Чутливість</string>
+    <string name="low">Низька</string>
+    <string name="medium">Середня</string>
+    <string name="high">Висока</string>
+    <string name="cooldown">Пауза між жестами — %1$d мс</string>
+    <string name="always">Завжди</string>
+    <string name="screen_on">Лише з увімкненим екраном</string>
+    <string name="screen_off">Лише з вимкненим екраном</string>
+    <string name="screen_warning">Робота з вимкненим екраном залежить від датчиків телефону й може збільшити витрату батареї.</string>
+    <string name="pocket_guard">Ігнорувати жести в кишені</string>
+    <string name="haptic">Вібрація після жесту</string>
+    <string name="pause_charging">Пауза під час заряджання</string>
+    <string name="appearance">Вигляд</string>
+    <string name="dark_theme">Темна тема</string>
+    <string name="light_theme">Світла тема</string>
+    <string name="system_theme">Як у системі</string>
+    <string name="dynamic_color">Кольори шпалер</string>
+    <string name="background_title">Робота у фоні</string>
+    <string name="background_advice">Якщо жести зупиняються, відкрийте системні налаштування застосунку й дозвольте фонову роботу. На Xiaomi також увімкніть автозапуск; на Samsung перевірте список застосунків у глибокому сні.</string>
+    <string name="system_settings">Системні налаштування</string>
+    <string name="about_body">Tukk · vkardin\nЖести обробляються на телефоні. Без облікового запису, аналітики й доступу до мережі.</string>
+</resources>
