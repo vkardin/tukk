@@ -38,11 +38,14 @@ internal data class TriggerConfig(
     val pocketGuard: Boolean = true,
     val vibration: Boolean = true,
     val pauseCharging: Boolean = false,
+    val pauseCall: Boolean = true,
+    val hapticStrength: Int = 1,
     val taps: Int = 2,
     val tapThreshold: Float = 4f,
     val volumeMode: Int = 0,
     val packageName: String = "",
-    val brightness: Int = 1,
+    /** Torch strength level; 0 uses the device default level. */
+    val brightness: Int = 0,
 ) {
     fun save(context: Context) {
         val prefix = "trigger.${kind.name}."
@@ -56,11 +59,13 @@ internal data class TriggerConfig(
             .putBoolean(prefix + "pocket", pocketGuard)
             .putBoolean(prefix + "haptic", vibration)
             .putBoolean(prefix + "charging", pauseCharging)
+            .putBoolean(prefix + "call", pauseCall)
+            .putInt(prefix + "hapticStrength", hapticStrength)
             .putInt(prefix + "taps", taps)
             .putFloat(prefix + "tapThreshold", tapThreshold)
             .putInt(prefix + "volumeMode", volumeMode)
             .putString(prefix + "package", packageName)
-            .putInt(prefix + "brightness", brightness)
+            .putInt(prefix + "torchLevel", brightness)
             .apply()
     }
 
@@ -82,11 +87,14 @@ internal data class TriggerConfig(
                 pocketGuard = prefs.getBoolean(prefix + "pocket", legacy.pocketGuard),
                 vibration = prefs.getBoolean(prefix + "haptic", legacy.vibration),
                 pauseCharging = prefs.getBoolean(prefix + "charging", legacy.pauseCharging),
+                pauseCall = prefs.getBoolean(prefix + "call", defaults.pauseCall),
+                hapticStrength = prefs.getInt(prefix + "hapticStrength", defaults.hapticStrength).coerceIn(0, 2),
                 taps = prefs.getInt(prefix + "taps", 2).coerceIn(2, 3),
                 tapThreshold = prefs.getFloat(prefix + "tapThreshold", 4f).coerceIn(1.5f, 18f),
                 volumeMode = prefs.getInt(prefix + "volumeMode", 0).coerceIn(0, 2),
                 packageName = prefs.getString(prefix + "package", "") ?: "",
-                brightness = prefs.getInt(prefix + "brightness", 1).coerceAtLeast(1),
+                // The former "brightness" key defaulted to the minimum level and is not migrated.
+                brightness = prefs.getInt(prefix + "torchLevel", 0).coerceAtLeast(0),
             )
         }
     }

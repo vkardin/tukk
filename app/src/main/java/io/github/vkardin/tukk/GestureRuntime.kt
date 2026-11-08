@@ -9,7 +9,7 @@ internal class GestureRuntime(val config: TriggerConfig) {
 
     private fun createDetector(): GestureDetector = when (config.kind) {
         TriggerKind.SHAKE -> ShakeDetector(config.threshold, config.cooldownMs * 1_000_000L)
-        TriggerKind.CHOP -> ChopDetector(config.threshold * 0.78f)
+        TriggerKind.CHOP -> ChopDetector(config.threshold * 0.6f)
         TriggerKind.BACK_TAP -> BackTapDetector(config.taps, config.tapThreshold)
         TriggerKind.FACE_DOWN -> FaceDownDetector()
         TriggerKind.VOLUME -> GestureDetector { false }

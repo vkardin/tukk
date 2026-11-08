@@ -23,6 +23,10 @@ internal class ActionExecutor(
 ) : AutoCloseable {
     private val cameras = context.getSystemService(CameraManager::class.java)
     private val handler = Handler(Looper.getMainLooper())
+    // Keeps the SOS pattern running while the screen is off; renewed on every step.
+    private val sosWakeLock = context.getSystemService(android.os.PowerManager::class.java)
+        .newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "tukk:sos")
+        .apply { setReferenceCounted(false) }
     private var cameraId: String? = null
     private var torchOn: Boolean? = null
     private var registered = false
@@ -65,7 +69,8 @@ internal class ActionExecutor(
     private val sosStep = object : Runnable {
         override fun run() {
             if (!sosActive) return
-            if (!setTorch(sosIndex % 2 == 0, 1)) {
+            sosWakeLock.acquire(SOS_WAKE_LOCK_MS)
+            if (!setTorch(sosIndex % 2 == 0, 0)) {
                 stopSos()
                 return
             }
@@ -95,8 +100,8 @@ internal class ActionExecutor(
                     }
                     true
                 }
-                ActionKind.SILENT -> sound(AudioManager.RINGER_MODE_SILENT)
-                ActionKind.VIBRATE -> sound(AudioManager.RINGER_MODE_VIBRATE)
+                ActionKind.SILENT -> toggleSound(AudioManager.RINGER_MODE_SILENT)
+                ActionKind.VIBRATE -> toggleSound(AudioManager.RINGER_MODE_VIBRATE)
                 ActionKind.SOUND -> sound(AudioManager.RINGER_MODE_NORMAL)
                 ActionKind.PLAY_PAUSE -> media(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
                 ActionKind.NEXT -> media(KeyEvent.KEYCODE_MEDIA_NEXT)
@@ -124,8 +129,8 @@ internal class ActionExecutor(
     private fun setTorch(enabled: Boolean, brightness: Int): Boolean {
         val id = cameraId ?: return false
         return try {
-            val max = maximumTorchStrength(context)
-            if (enabled && Build.VERSION.SDK_INT >= 33 && max > 1) {
+            val max = torchLevels
+            if (enabled && Build.VERSION.SDK_INT >= 33 && max > 1 && brightness > 0) {
                 cameras.turnOnTorchWithStrengthLevel(id, brightness.coerceIn(1, max))
             } else {
                 cameras.setTorchMode(id, enabled)
@@ -139,6 +144,14 @@ internal class ActionExecutor(
         } catch (_: SecurityException) {
             false
         }
+    }
+
+    private val torchLevels by lazy { maximumTorchStrength(context) }
+
+    /** Switches to [mode], or back to normal sound when the phone is already in it. */
+    private fun toggleSound(mode: Int): Boolean {
+        val audio = context.getSystemService(AudioManager::class.java)
+        return sound(if (audio.ringerMode == mode) AudioManager.RINGER_MODE_NORMAL else mode)
     }
 
     private fun sound(mode: Int): Boolean {
@@ -159,6 +172,17 @@ internal class ActionExecutor(
 
     private fun offerLaunch(intent: Intent, config: TriggerConfig): Boolean {
         if (intent.resolveActivity(context.packageManager) == null) return false
+        // An enabled accessibility service may start activities directly from the background.
+        GestureAccessibility.instance?.let { service ->
+            try {
+                service.startActivity(Intent(intent).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return true
+            } catch (_: android.content.ActivityNotFoundException) {
+                return false
+            } catch (_: SecurityException) {
+                // Fall back to the notification below.
+            }
+        }
         val manager = context.getSystemService(NotificationManager::class.java)
         if (!manager.areNotificationsEnabled()) return false
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -185,7 +209,8 @@ internal class ActionExecutor(
         val wasActive = sosActive
         sosActive = false
         handler.removeCallbacks(sosStep)
-        if (wasActive) setTorch(false, 1)
+        if (wasActive) setTorch(false, 0)
+        if (sosWakeLock.isHeld) sosWakeLock.release()
     }
 
     override fun close() {
@@ -193,6 +218,8 @@ internal class ActionExecutor(
         if (registered) cameras.unregisterTorchCallback(callback)
     }
 }
+
+private const val SOS_WAKE_LOCK_MS = 10_000L
 
 internal fun maximumTorchStrength(context: Context): Int {
     if (Build.VERSION.SDK_INT < 33) return 1
@@ -207,3 +234,16 @@ internal fun maximumTorchStrength(context: Context): Int {
     }
 }
 
+
+internal fun defaultTorchStrength(context: Context): Int {
+    if (Build.VERSION.SDK_INT < 33) return 1
+    return try {
+        val cameras = context.getSystemService(CameraManager::class.java)
+        val id = cameras.cameraIdList.firstOrNull {
+            cameras.getCameraCharacteristics(it).get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+        } ?: return 1
+        cameras.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_STRENGTH_DEFAULT_LEVEL) ?: 1
+    } catch (_: android.hardware.camera2.CameraAccessException) {
+        1
+    }
+}

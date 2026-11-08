@@ -23,15 +23,54 @@ class MotionDetectorsTest {
         assertTrue(detector.accept(sample(4900, z = -9.8f)))
     }
 
-    @Test fun chopRequiresFreshGyroscopeDataAndOpposingMotions() {
-        val detector = ChopDetector()
-        assertFalse(detector.accept(sample(0, x = 25f)))
-        assertFalse(detector.accept(sample(50)))
-        detector.rotation(sample(200, x = 2f, z = 0f))
-        assertFalse(detector.accept(sample(210, x = 25f)))
-        assertFalse(detector.accept(sample(250)))
-        detector.rotation(sample(400, x = -2f, z = 0f))
-        assertTrue(detector.accept(sample(410, x = -25f)))
+    /** 100 Hz stream at rest with gravity on [gravityAxis], plus swings starting at [swingsMs]. */
+    private fun chopStream(
+        detector: ChopDetector,
+        swingsMs: List<Long>,
+        gravityAxis: Char = 'z',
+        rotationRate: Float = 4f,
+        durationMs: Long = 2000,
+        swingAxis: Char = 'x',
+    ): List<Long> {
+        val hits = mutableListOf<Long>()
+        for (ms in 0..durationMs step 10) {
+            val swing = swingsMs.firstOrNull { ms - it in 0..119 }
+            // Acceleration peak followed by a braking peak about 80 ms later.
+            val linear = when (swing?.let { ms - it }) {
+                null -> 0f
+                in 0..29 -> 22f
+                in 80..109 -> -20f
+                else -> 0f
+            }
+            val gravity = 9.8f
+            val x = (if (gravityAxis == 'x') gravity else 0f) + (if (swingAxis == 'x') linear else 0f)
+            val y = (if (gravityAxis == 'y') gravity else 0f) + (if (swingAxis == 'y') linear else 0f)
+            val z = if (gravityAxis == 'z') gravity else 0f
+            detector.rotation(sample(ms, z = if (swing != null) rotationRate else 0.1f).copy(x = 0f))
+            if (detector.accept(sample(ms, x = x, y = y, z = z))) hits += ms
+        }
+        return hits
+    }
+
+    @Test fun chopRecognizesTwoSwings() {
+        assertEquals(1, chopStream(ChopDetector(), listOf(500, 950)).size)
+    }
+
+    @Test fun chopIgnoresSingleSwingWithBrakingPeak() {
+        assertEquals(emptyList<Long>(), chopStream(ChopDetector(), listOf(500)))
+    }
+
+    @Test fun chopWorksWhenPhoneIsUpright() {
+        assertEquals(1, chopStream(ChopDetector(), listOf(500, 950), gravityAxis = 'y', swingAxis = 'x').size)
+        assertEquals(1, chopStream(ChopDetector(), listOf(500, 950), gravityAxis = 'y', swingAxis = 'y').size)
+    }
+
+    @Test fun chopRejectsSwingsTooFarApart() {
+        assertEquals(emptyList<Long>(), chopStream(ChopDetector(), listOf(300, 1600), durationMs = 2500))
+    }
+
+    @Test fun chopRequiresWristRotation() {
+        assertEquals(emptyList<Long>(), chopStream(ChopDetector(), listOf(500, 950), rotationRate = 0.2f))
     }
 
     @Test fun chopRejectsWalkingWithoutRotation() {
@@ -41,6 +80,13 @@ class MotionDetectorsTest {
             detector.rotation(sample(i * 200L, z = 0.2f))
             detector.accept(sample(i * 200L + 10, x = x))
         }.count { it })
+    }
+
+    @Test fun gravityFilterRemovesStaticGravity() {
+        val filter = GravityFilter()
+        var last: MotionSample? = null
+        for (ms in 0..3000L step 10) last = filter.accept(sample(ms, y = 9.8f, z = 0f))
+        assertEquals(0f, requireNotNull(last).y, 0.01f)
     }
 
     @Test fun doubleTapFixtureRecognizesOnlyOnePair() {
@@ -77,6 +123,21 @@ class MotionDetectorsTest {
         assertFalse(detector.accept(25, 2300, 0))
         assertFalse(detector.accept(24, 3000, 2))
         assertTrue(detector.accept(25, 3200, 2))
+    }
+
+    @Test fun faceDownIgnoresBriefFlip() {
+        val detector = FaceDownDetector()
+        assertFalse(detector.accept(sample(0)))
+        assertFalse(detector.accept(sample(100, z = -9.8f)))
+        assertFalse(detector.accept(sample(400, z = -9.8f)))
+        assertFalse(detector.accept(sample(500)))
+    }
+
+    @Test fun volumeRejectsSlowPresses() {
+        val detector = VolumeSequenceDetector()
+        assertFalse(detector.accept(25, 1000, 1))
+        assertFalse(detector.accept(25, 1600, 1))
+        assertTrue(detector.accept(25, 1800, 1))
     }
 
     private fun readFixture(name: String): List<MotionSample> {
