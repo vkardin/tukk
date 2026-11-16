@@ -1,16 +1,45 @@
 name: Release
 
-# Pushing a tag v1.2.3 builds the signed APK and publishes the release.
-# The tag has to match versionName in app/build.gradle.kts.
+# The release is made by itself when a new versionName in app/build.gradle.kts
+# reaches main (there is no release v<version> yet). It can also be started by
+# hand (Actions -> Release -> Run workflow) or by pushing a tag v1.2.3.
 on:
   push:
+    branches: [main]
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      publish: ${{ steps.v.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(sed -n 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"\(.*\)"$/\1/p' app/build.gradle.kts | head -n1)
+          test -n "$V"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "${GITHUB_REF_NAME#v}" != "$V" ]; then echo "The tag does not match versionName $V"; exit 1; fi
+          P=true
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF_TYPE" = branch ] && gh release view "v$V" >/dev/null 2>&1; then P=false; fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "publish=$P" >> "$GITHUB_OUTPUT"
+          echo "Version $V, publish: $P"
+
   release:
+    needs: plan
+    if: needs.plan.outputs.publish == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -21,11 +50,8 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - uses: gradle/actions/setup-gradle@v5
-      - name: Check the tag matches versionName
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          grep -q "versionName = \"$version\"" app/build.gradle.kts || { echo "tag $version does not match versionName"; exit 1; }
-          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - name: Version
+        run: echo "VERSION=${{ needs.plan.outputs.version }}" >> "$GITHUB_ENV"
       - name: Restore the signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -50,4 +76,9 @@ jobs:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" "dist/tukk-$VERSION.apk" "dist/tukk-$VERSION.aab" --title "Tukk $VERSION" --notes-file notes.md
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" "dist/tukk-$VERSION.apk" "dist/tukk-$VERSION.aab" --clobber
+          else
+            gh release create "v$VERSION" "dist/tukk-$VERSION.apk" "dist/tukk-$VERSION.aab" --target "$GITHUB_SHA" --title "Tukk $VERSION" --notes-file notes.md
+          fi
