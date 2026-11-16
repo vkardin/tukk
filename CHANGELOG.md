@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0
+
+- First public release. Gestures, actions and settings are the same as in 0.4.0.
+- Releases are signed with a permanent key, so later versions install over this one without removing the app.
+
 ## 0.4.0
 
 - Flashlight and SOS now use the default torch strength instead of the lowest level on Android 13 and later.

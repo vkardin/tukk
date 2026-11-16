@@ -54,7 +54,7 @@ pocket, pause during calls or while charging, and vibration feedback with three 
 
 Download the APK from the [latest release](https://github.com/vkardin/tukk/releases) and open it on
 your phone. Android asks to allow installs from your browser or file manager the first time.
-Google Play listing coming soon.
+A Google Play listing is planned.
 
 After the first launch, open **Settings → Background work** and follow the steps for your phone,
 otherwise some systems stop gestures in the background.

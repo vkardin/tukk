@@ -14,11 +14,25 @@ android {
         applicationId = "io.github.vkardin.tukk"
         minSdk = 26
         targetSdk = 37
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "1.0.0"
+    }
+    // Release signing comes from the environment (CI secrets); without it the
+    // release build is signed with the debug key, so it still builds locally.
+    val keystore = System.getenv("TUKK_KEYSTORE_FILE")?.let(::file)?.takeIf { it.exists() }
+    signingConfigs {
+        if (keystore != null) {
+            create("release") {
+                storeFile = keystore
+                storePassword = System.getenv("TUKK_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("TUKK_KEY_ALIAS")
+                keyPassword = System.getenv("TUKK_KEY_PASSWORD")
+            }
+        }
     }
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
