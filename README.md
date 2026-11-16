@@ -126,6 +126,7 @@ typefaces, licensed under the SIL Open Font License.
 | **[Leveler](https://vkardin.github.io/leveler/)** | Even loudness, clearer dialogue, an equalizer and playback speed controls. [GitHub](https://github.com/vkardin/leveler) |
 | **[Video Drift](https://vkardin.github.io/video-drift/)** | Floating video with subtitles, saved playback positions and timestamped notes. [GitHub](https://github.com/vkardin/video-drift) |
 | **[UNI](https://vkardin.github.io/uni-homebot/)** | Your home server in Telegram: apps, monitoring, notifications and a Mini App. [GitHub](https://github.com/vkardin/uni-homebot) |
+| **[BlackoutMode](https://vkardin.github.io/blackoutmode/)** | Keeps a laptop alive through power outages: cuts the draw, counts the time left on battery and power bank. Windows. [GitHub](https://github.com/vkardin/blackoutmode) |
 
 [github.com/vkardin](https://github.com/vkardin) · Independent tools · open source
 <!-- project-family:end -->
