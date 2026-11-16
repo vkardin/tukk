@@ -52,9 +52,14 @@ pocket, pause during calls or while charging, and vibration feedback with three 
 
 ## Install
 
-Download the APK from the [latest release](https://github.com/vkardin/tukk/releases) and open it on
-your phone. Android asks to allow installs from your browser or file manager the first time.
+Download the APK from the [latest release](https://github.com/vkardin/tukk/releases/latest) and open it
+on your phone. Android asks to allow installs from your browser or file manager the first time.
 A Google Play listing is planned.
+
+If Play Protect blocks the install, tap **OK** and allow it for this app, or pause the scan while
+you install. If the accessibility switch is greyed out ("Access denied"), open **Settings → Apps →
+Tukk → ⋮ → Allow restricted settings** and turn it on again. Android applies this to every app
+installed from a file.
 
 After the first launch, open **Settings → Background work** and follow the steps for your phone,
 otherwise some systems stop gestures in the background.
@@ -119,14 +124,14 @@ typefaces, licensed under the SIL Open Font License.
 [**vkardin / tools — all projects ↗**](https://vkardin.github.io/)
 ## More tools by vkardin
 
-| Project | Projects |
+| Project | Description |
 | --- | --- |
-| **[Snapt](https://vkardin.github.io/snapt/)** | Fast, lightweight screenshot tool for Windows, macOS and Linux. [GitHub](https://github.com/vkardin/snapt) |
 | **[Video Glow](https://vkardin.github.io/video-glow/)** | Ambient light around web videos. Soft glow, LED strips and room colour. [GitHub](https://github.com/vkardin/video-glow) |
 | **[Leveler](https://vkardin.github.io/leveler/)** | Even loudness, clearer dialogue, an equalizer and playback speed controls. [GitHub](https://github.com/vkardin/leveler) |
+| **[Snapt](https://vkardin.github.io/snapt/)** | Fast, lightweight screenshot tool for Windows, macOS and Linux. [GitHub](https://github.com/vkardin/snapt) |
 | **[Video Drift](https://vkardin.github.io/video-drift/)** | Floating video with subtitles, saved playback positions and timestamped notes. [GitHub](https://github.com/vkardin/video-drift) |
-| **[UNI](https://vkardin.github.io/uni-homebot/)** | Your home server in Telegram: apps, monitoring, notifications and a Mini App. [GitHub](https://github.com/vkardin/uni-homebot) |
 | **[BlackoutMode](https://vkardin.github.io/blackoutmode/)** | Keeps a laptop alive through power outages: cuts the draw, counts the time left on battery and power bank. Windows. [GitHub](https://github.com/vkardin/blackoutmode) |
+| **[UNI](https://vkardin.github.io/uni-homebot/)** | Your home server in Telegram: apps, monitoring, notifications and a Mini App. [GitHub](https://github.com/vkardin/uni-homebot) |
 
 [github.com/vkardin](https://github.com/vkardin) · Independent tools · open source
 <!-- project-family:end -->
