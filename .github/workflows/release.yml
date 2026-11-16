@@ -55,15 +55,26 @@ jobs:
       - name: Restore the signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           test -n "$KEYSTORE_BASE64" || { echo "ANDROID_KEYSTORE_BASE64 secret is missing"; exit 1; }
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/tukk.jks"
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/tukk.jks"
           echo "TUKK_KEYSTORE_FILE=$RUNNER_TEMP/tukk.jks" >> "$GITHUB_ENV"
+          echo "Key store file: $(wc -c < "$RUNNER_TEMP/tukk.jks") bytes"
+          # A password pasted with a stray space or line break is a common mistake: trim it.
+          trim() { printf '%s' "$1" | tr -d '\r\n' | sed 's/^ *//;s/ *$//'; }
+          trim "$STORE_PASSWORD" > "$RUNNER_TEMP/store.pw"
+          if ! keytool -list -keystore "$RUNNER_TEMP/tukk.jks" -storepass:file "$RUNNER_TEMP/store.pw" > "$RUNNER_TEMP/keytool.out" 2>&1; then
+            sed -n '1,3p' "$RUNNER_TEMP/keytool.out"
+            echo "The key store password in the secret does not open the key store"; exit 1
+          fi
+          sed -n '1,6p' "$RUNNER_TEMP/keytool.out"
+          echo "TUKK_KEYSTORE_PASSWORD=$(cat "$RUNNER_TEMP/store.pw")" >> "$GITHUB_ENV"
+          echo "TUKK_KEY_PASSWORD=$(trim "$KEY_PASSWORD")" >> "$GITHUB_ENV"
       - name: Test and build
         env:
-          TUKK_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           TUKK_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          TUKK_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           ./gradlew --no-daemon test :app:assembleRelease :app:bundleRelease --stacktrace
           mkdir -p dist
